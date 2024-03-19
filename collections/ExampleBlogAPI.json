@@ -1,0 +1,483 @@
+{
+	"info": {
+		"_postman_id": "09a18965-429d-412c-b1b7-62014208a6d7",
+		"name": "ExampleBlogAPI",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30469361"
+	},
+	"item": [
+		{
+			"name": "SmokeTests",
+			"item": [
+				{
+					"name": "blogposts",
+					"item": [
+						{
+							"name": "GetBlogpostList",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"let jsonData = pm.response.json();",
+											"let firstBlogPost = {",
+											"    \"id\": 1,",
+											"    \"title\": \"The FIRST blog post\",",
+											"    \"body\": \"This is my first blog post\",",
+											"    \"profileId\": 1",
+											"};",
+											"",
+											"pm.test(\"Check first Blogpost Data\", function(){",
+											"    //Assume that the first blogpost won't change",
+											"    pm.expect(jsonData[0]).to.eql(firstBlogPost);",
+											"});",
+											"",
+											"pm.test(\"Check that each blogpost has required fields\", function(){",
+											"    let x;",
+											"",
+											"    for(x in jsonData){",
+											"        utils.check_blogpost_key(jsonData[x]);  ",
+											"    } ",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/blogposts",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"blogposts"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "GetSingleBlogpost",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/blogposts/{{blogpost_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"blogposts",
+										"{{blogpost_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "PostAndDeleteBlogpost",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const jsonData = pm.response.json();",
+											"const post_id = jsonData.id;",
+											"const base_url = pm.environment.get(\"base_url\");",
+											"",
+											"pm.sendRequest({url:`${base_url}/blogposts/${post_id}`, method: 'DELETE'}, function(err, response){",
+											"   pm.test(\"Delete Response is OK\", function(){",
+											"    console.log(response);",
+											"    pm.expect(response.status).to.eql('OK');",
+											"   });",
+											"   ",
+											"    pm.test(\"Delete Response body is empty\", function(){",
+											"    pm.expect(response.json()).to.eql({});",
+											"    });",
+											"});",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"New Blog Post Title\",\n    \"body\": \"This is a blog post that I created with the API\",\n    \"profileId\": 1\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/blogposts",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"blogposts"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "UpdateBlogPost",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"//Get original value",
+											"const base_url = pm.environment.get(\"base_url\");",
+											"const post_id = pm.environment.get(\"blogpost_id\");",
+											"",
+											"pm.sendRequest({url:`${base_url}/blogposts/${post_id}`, method: 'GET'}, function(err, response){",
+											"    console.log(`pre-requet script save the response ${response}`)",
+											"    pm.environment.set(\"original_get_response\", response.json());",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Reset the blogpost back to its original state",
+											"const base_url = pm.environment.get(\"base_url\");",
+											"const post_id = pm.environment.get(\"blogpost_id\");",
+											"const original_response = pm.environment.get(\"original_get_response\");",
+											"const put_response_body = pm.response.json().body;",
+											"console.log(`update response body ${put_response_body}`)",
+											"console.log(original_response)",
+											"",
+											"pm.sendRequest({url:`${base_url}/blogposts/${post_id}`, ",
+											"    method: 'PUT',",
+											"    header:{'Content-type': 'application/json'},",
+											"    body:{mode: 'raw', raw: original_response}},",
+											"",
+											"    function (err, response){",
+											"        console.log(response.json());",
+											"    }",
+											");"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"modified blog Post Title\",\n    \"body\": \"This is a blog post that I modified\",\n    \"profileId\": 1\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/blogposts/{{blogpost_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"blogposts",
+										"{{blogpost_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "GetBlogpostWithEmbeddedComments",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const expect_response = {",
+											"    'id': 1,",
+											"    'title': 'The FIRST blog post',",
+											"    'body': 'This is my first blog post',",
+											"    'profileId': 1,",
+											"    'comments': [",
+											"        {",
+											"            'id': 1,",
+											"            'body': 'some comment',",
+											"            'blogpostId': 1,",
+											"            'profileId':1",
+											"        }",
+											"    ]",
+											"}",
+											"",
+											"pm.test(\"Response includes correct information\", function(){",
+											"    pm.expect(expect_response).to.eql(pm.response.json());",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/blogposts/1?_embed=comments",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"blogposts",
+										"1"
+									],
+									"query": [
+										{
+											"key": "_embed",
+											"value": "comments"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "GetBlogPostWithExpandedProfile",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const expect_response = {",
+											"    \"id\": 1,",
+											"    \"title\": \"The FIRST blog post\",",
+											"    \"body\": \"This is my first blog post\",",
+											"    \"profileId\": 1,",
+											"    \"profile\": []",
+											"}",
+											"",
+											"pm.test(\"Response includes correct information for profile\", function(){",
+											"    pm.expect(expect_response).to.eql(pm.response.json());",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/blogposts/1?_embed=profile",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"blogposts",
+										"1"
+									],
+									"query": [
+										{
+											"key": "_embed",
+											"value": "profile"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"utils = {check_blogpost_key: function (blogpostData){",
+									"    let postKeys = Object.keys(blogpostData);",
+									"    pm.expect(postKeys).to.have.members(['id','title','body','profileId']);",
+									"}};"
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "comments",
+					"item": [
+						{
+							"name": "GetCommentList",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/comments",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"comments"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "GetSingleComments",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/comments/{{comment_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"comments",
+										"{{comment_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "PostAndDeleteComment",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/comments/{{comment_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"comments",
+										"{{comment_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "UpdateComment",
+							"request": {
+								"method": "PUT",
+								"header": []
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "profiles",
+					"item": [
+						{
+							"name": "GetProfileList",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/profiles",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"profiles"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "GetSingleProfiles",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/profiles/{{profile_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"profiles",
+										"{{profile_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "PostAndDeleteProfile",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/profiles/{{profile_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"profiles",
+										"{{profile_id}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "UpdateProfile",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/profiles/{{profile_id}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"profiles",
+										"{{profile_id}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "workflows",
+			"item": [
+				{
+					"name": "NewCommenter",
+					"item": []
+				},
+				{
+					"name": "DuplicateAndEditBlogpost",
+					"item": []
+				}
+			]
+		}
+	]
+}

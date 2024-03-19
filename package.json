@@ -1,0 +1,23 @@
+{
+  "name": "postman-reportportal",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "ts-node src/postman-runner.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/preset-env": "^7.24.0",
+    "@reportportal/newman-reporter-agent-js-postman": "^5.1.0",
+    "newman": "^6.1.2",
+    "typescript": "^5.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.29",
+    "dotenv": "^16.4.5",
+    "ts-node": "^10.9.2"
+  }
+}
